@@ -1,20 +1,27 @@
-async function newHttpRequest(address, method_type, currentAccessToken) {
-  console.log("Maing new HTTP request to:", address);
+async function request(address, methodType, accessToken) {
+  console.log("New HTTP request to:", address);
   var myHeaders = new Headers();
-  myHeaders.append("Authorization", "Bearer " + currentAccessToken);
+  myHeaders.append("Authorization", "Bearer " + accessToken);
   var requestOptions = {
-    method: method_type,
+    method: methodType,
     headers: myHeaders,
     redirect: "follow",
   };
-
   try {
     const response = await fetch(address, requestOptions);
+    if (response.status > 299) {
+      throw new Error(
+        "Status code: " +
+          response.status +
+          " response text: " +
+          response.statusText
+      );
+    }
     const result = await response.json();
-    console.log("Http RequestResult:", result);
+    return result;
   } catch (error) {
-    console.error("Error fetching request:", error);
+    throw error;
   }
 }
 
-module.exports = { newHttpRequest };
+module.exports = { request };
