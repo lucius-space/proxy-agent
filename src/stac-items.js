@@ -37,7 +37,27 @@ async function fetchCollectionStacItem(accessToken, collectionId, itemId) {
   }
 }
 
-module.exports = { fetchAllCollectionStacItems, fetchCollectionStacItem };
+// WIP
+function fetchXmlAssets(stacItems) {
+  console.log("Fetching XML link for stac items");
+  var xmlAssets = {};
+  stacItems.map((stacItem) => {
+    Object.entries(stacItem.assets).forEach(([key, value]) => {
+      if (value.type === "application/xml") {
+        xmlAssets[key] = { href: value.href };
+      }
+    });
+  });
+  console.log("Returning XML links for stac items");
+  return xmlAssets;
+}
+//
+
+module.exports = {
+  fetchAllCollectionStacItems,
+  fetchCollectionStacItem,
+  fetchXmlAssets,
+};
 
 //fetch collections
 //for each collection, fetch stac items

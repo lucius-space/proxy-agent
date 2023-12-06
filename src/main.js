@@ -1,6 +1,9 @@
-const { UP42_Connection } = require("./oauth.js");
+const { UP42_Connection } = require("./up42-auth.js");
 const { fetchAllCollections } = require("./stac-collections.js");
-const { fetchAllCollectionStacItems } = require("./stac-items.js");
+const {
+  fetchAllCollectionStacItems,
+  fetchXmlAssets,
+} = require("./stac-items.js");
 
 const UP42_CONNECTION = new UP42_Connection(
   process.env.UP42_USERNAME,
@@ -15,6 +18,7 @@ const COLLECTION_IDS = UP42_CONNECTION_INIT.then(() => {
 
 const PASSING_OBJECT = COLLECTION_IDS.then(async (COLLECTION_IDS) => {
   var collectionObjects = [];
+  var xmlAssets = [];
   try {
     for (collection of COLLECTION_IDS) {
       items = await fetchAllCollectionStacItems(
@@ -24,8 +28,10 @@ const PASSING_OBJECT = COLLECTION_IDS.then(async (COLLECTION_IDS) => {
       if (items.length === 0) {
         throw new Error("No items found for collection: " + collection);
       }
-      collectionObjects.push({ [collection]: items });
+      xmlAssets.push(fetchXmlAssets(items));
+      // collectionObjects.push({ [collection]: items });
     }
+    tempHandleXMl(xmlAssets);
     return collectionObjects;
   } catch (error) {
     throw error;
@@ -33,7 +39,54 @@ const PASSING_OBJECT = COLLECTION_IDS.then(async (COLLECTION_IDS) => {
 });
 
 PASSING_OBJECT.then((result) => {
-  console.log(JSON.stringify(result, null, 2));
+  // console.log(JSON.stringify(result, null, 2));
 });
 
-// ADD code to pass the object onto Lucios
+//WORK IN PROGRESS CODE
+//WIP
+const fs = require("fs");
+
+// WIP
+function tempHandleXMl(xmlAssets) {
+  // console.log(xmlAssets);
+  var temp = xmlAssets[0];
+  console.log(temp);
+  Object.entries(temp).forEach(async ([key, value]) => {
+    try {
+      response = await xmlRequest(
+        value.href,
+        "GET",
+        UP42_CONNECTION.accessToken
+      );
+      fs.writeFileSync(`./data/${key}`, response);
+    } catch (error) {
+      throw error;
+    }
+  });
+  // console.log(temp);
+}
+async function xmlRequest(address, methodType, accessToken) {
+  // console.log("New HTTP request to:", address);
+  var myHeaders = new Headers();
+  myHeaders.append("Authorization", "Bearer " + accessToken);
+  const requestParams = {
+    method: methodType,
+    headers: myHeaders,
+    redirect: "follow",
+  };
+  try {
+    const response = await fetch(address, requestParams);
+    if (response.status > 299) {
+      throw new Error(
+        "Status code: " +
+          response.status +
+          " response text: " +
+          response.statusText
+      );
+    }
+    return response.text();
+  } catch (error) {
+    throw error;
+  }
+}
+//
