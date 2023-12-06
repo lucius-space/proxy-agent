@@ -7,7 +7,7 @@ const { uploadFile } = require("./upload-file.js");
 
 const parser = new XMLParser();
 
-const LUCIUS_API_URL = process.env.LUCIUS_API_URL || "http://localhost:8055";
+const LUCIUS_API_URL = process.env.LUCIUS_API_URL || "http://localhost:8055/import/capture";
 const LUCIUS_API_KEY = process.env.LUCIUS_API_KEY;
 
 const UP42_CONNECTION = new UP42_Connection(process.env.UP42_USERNAME, process.env.UP42_PASSWORD);
