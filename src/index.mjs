@@ -52,8 +52,6 @@ let context = {
   options: options,
 };
 
-console.log(context.LUCIUS_API_URL);
-
 if (!context.LUCIUS_API_URL || !context.LUCIUS_API_KEY) {
   throw new Error("Both LUCIUS_API_URL and LUCIUS_API_KEY need to be defined");
 }
