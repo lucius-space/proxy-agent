@@ -22,7 +22,7 @@ UP42_PASSWORD   : Password for UP42 account
 
 Of note, the username and password to access the provider can be a newly created account for this proxy script (e.g. `lucius-proxy@company.com`) on the provider's system if preferable.
 
-To run the script, after downloading it from the [releases](https://github.com/lucius-space/proxy-agent/releases) page, simply execute the script relevant to your operating system:
+To run the script, after downloading it from the [releases](https://github.com/lucius-space/proxy-agent/releases) page, simply execute the script relevant to your operating system in a terminal prompt:
 
 ```
 ./lucius-proxy-<os>
