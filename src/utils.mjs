@@ -12,7 +12,7 @@ export const isObject = (val) => typeof val === "object" && val !== null;
 
 const findKeyAndValueStart = async (obj, keyToFind, valueStarts) => {
   if (Array.isArray(obj)) {
-    return obj.some((item) => findKeyAndValueStart(item, keyToFind));
+    return obj.some((item) => findKeyAndValueStart(item, keyToFind, valueStarts));
   } else if (isObject(obj)) {
     if (keyToFind in obj) {
       const value = obj[keyToFind];
@@ -23,7 +23,7 @@ const findKeyAndValueStart = async (obj, keyToFind, valueStarts) => {
         return valueStarts.some((v) => val.startsWith(v));
       }
     }
-    return Object.values(obj).some((val) => findKeyAndValueStart(val, keyToFind));
+    return Object.values(obj).some((val) => findKeyAndValueStart(val, keyToFind, valueStarts));
   }
   return false;
 };
