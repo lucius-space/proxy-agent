@@ -10,7 +10,7 @@
   "scripts": {
     "start": "node src/index.mjs",
     "compile": "esbuild --bundle src/index.mjs --platform=node --outfile=dist/index.js",
-    "build": "npm run compile && pkg . --out-path dist/ --no-bytecode"
+    "build": "npm run compile && pkg . --out-path dist/ --no-bytecode && rm -rf dist/index.js"
   },
   "author": "Lucius Space LLC",
   "license": "MIT",
