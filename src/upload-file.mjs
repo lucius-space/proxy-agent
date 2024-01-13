@@ -42,18 +42,30 @@ export const uploadXMLFile = async (context, xml) => {
 
     formData.pipe(req);
   });
-  let record_mapping = await p;
+  let record_mapping;
+  try {
+    record_mapping = await p;
+  } catch (e) {
+    console.error(`Error uploading XML file ${xml.filename} for processing: ${e}`);
+  }
+  try {
+    const record = await context.db.request(
+      readItem("captures", record_mapping[0].record_id, {
+        fields: ["id", "assets.directus_files_id.filename_download"],
+      })
+    );
 
-  const record = await context.db.request(
-    readItem("captures", record_mapping[0].record_id, {
-      fields: ["id", "assets.directus_files_id.filename_download"],
-    })
-  );
-
-  record_mapping[0]["assets"] = record.assets.length ? record.assets?.map((fid) => fid?.directus_files_id?.filename_download) : [];
+    record_mapping[0]["assets"] = record.assets.length ? record.assets?.map((fid) => fid?.directus_files_id?.filename_download) : [];
+  } catch (e) {
+    console.error(`Error retrieving existing supporting assets for capture record_mapping ${JSON.stringify(record_mapping)}: ${JSON.stringify(e)}`);
+  }
 
   if (!record_mapping[0].assets.includes(xml.filename)) {
-    await uploadSupporting(context, xml, record_mapping[0]);
+    try {
+      await uploadSupporting(context, xml, record_mapping[0]);
+    } catch (e) {
+      console.error(`Error uploading XML file ${xml.filename} as supporting asset: ${e}`);
+    }
   } else {
     console.log(`${new Date().toISOString()} :: File already exists: ${xml.filename}`);
   }
@@ -68,23 +80,32 @@ export const uploadSupporting = async (context, supporting, record) => {
       const file = new Blob([supporting.fileData], { type: supporting.type });
       const formData = new FormData();
       formData.append("file", file, supporting.filename);
-      const data = await context.db.request(uploadFiles(formData));
-      await context.db.request(
-        updateFile(data.id, {
-          captures: {
-            create: [
-              {
-                directus_files_id: data.id,
-                captures_id: {
-                  id: record.record_id,
+      let data;
+      try {
+        data = await context.db.request(uploadFiles(formData));
+      } catch (e) {
+        console.error(`Error uploading supporting file ${supporting.filename} for processing: ${e}`);
+      }
+      try {
+        await context.db.request(
+          updateFile(data.id, {
+            captures: {
+              create: [
+                {
+                  directus_files_id: data.id,
+                  captures_id: {
+                    id: record.record_id,
+                  },
                 },
-              },
-            ],
-            update: [],
-            delete: [],
-          },
-        })
-      );
+              ],
+              update: [],
+              delete: [],
+            },
+          })
+        );
+      } catch (e) {
+        console.error(`Error updating supporting file ${supporting.filename} relationship: ${e}`);
+      }
     } else {
       console.log(`${new Date().toISOString()} :: File already exists: ${supporting.filename}`);
     }

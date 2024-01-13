@@ -41,7 +41,12 @@ export default class UP42 {
   async init() {
     if (!this.UP42_USERNAME && !this.UP42_PASSWORD) return null;
     console.log(`${new Date().toISOString()} :: Creating UP42 connection`);
-    const tokens = await this.fetchTokens();
+    let tokens;
+    try {
+      tokens = await this.fetchTokens();
+    } catch (e) {
+      console.error(`Error retrieving UP42 access token: ${e}`);
+    }
     this.ACCESS_TOKEN = tokens[0];
     this.REFRESH_TOKEN = tokens[1];
   }

@@ -29,12 +29,16 @@ const findKeyAndValueStart = async (obj, keyToFind, valueStarts) => {
 };
 
 export const filterXMLFiles = async (debug, filename, xmlContent, key, valueStarts) => {
-  const result = await parser.parseStringPromise(xmlContent);
-  const match = findKeyAndValueStart(result, key, valueStarts);
-  if (debug && !match) {
-    console.log(`${new Date().toISOString()} :: ${filename} did not match ${valueStarts} on ${key}`);
+  try {
+    const result = await parser.parseStringPromise(xmlContent);
+    const match = findKeyAndValueStart(result, key, valueStarts);
+    if (debug && !match) {
+      console.log(`${new Date().toISOString()} :: ${filename} did not match ${valueStarts} on ${key}`);
+    }
+    return match;
+  } catch (e) {
+    console.error(`Error filtering XML files: ${e}`);
   }
-  return match;
 };
 
 export const filterByValue = (nestedDict, filterKey, filterValues) => {

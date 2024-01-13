@@ -58,7 +58,11 @@ if (!context.LUCIUS_API_URL || !context.LUCIUS_API_KEY) {
 
 const main = async () => {
   for (const provider of providers) {
-    await provider.init();
+    try {
+      await provider.init();
+    } catch (e) {
+      console.error(`Error creating provider ${provider.constructor.name}: ${e}`);
+    }
   }
   context["db"] = createDirectus(context.LUCIUS_API_URL).with(staticToken(context.LUCIUS_API_KEY)).with(rest());
   intervalFetch(context, providers);
