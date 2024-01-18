@@ -50,3 +50,14 @@ These are the options provided by the script during run:
 ### Additional Information
 
 There are no issues with running this script multiple times -- the LUCIUS platform does deduplication of records to ensure that no duplicates are created.
+
+### Supported
+
+#### Platforms
+
+UP42
+
+#### Sensors
+
+PNEO
+PHR
