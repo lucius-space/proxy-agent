@@ -3,7 +3,7 @@ const parser = new xml2js.Parser();
 
 export const toRFC3339 = (dateStr) => {
   const date = new Date(dateStr);
-  return date.toISOString().split("T")[0] + "T00:00:00Z";
+  return date.toISOString().replace(/.\d+Z$/g, "Z");
 };
 
 export const isDateInPast = (date) => new Date(date).getTime() < Date.now();
