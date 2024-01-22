@@ -1,8 +1,7 @@
 import dotenv from "dotenv";
 import fs from "fs";
 import commandLineArgs from "command-line-args";
-import { createDirectus, rest, staticToken } from "@directus/sdk";
-import { intervalFetch } from "./main.mjs";
+import { main } from "./main.mjs";
 
 dotenv.config();
 
@@ -30,18 +29,6 @@ if (options.help) {
     LUCIUS_API_KEY   : Required. The API key for Lucius.`);
 }
 
-// Import all provider modules
-const PROVIDERS_FOLDER = "./src/providers";
-let provider_files = fs.readdirSync(PROVIDERS_FOLDER);
-let providers = [];
-// for (const file of provider_files) {
-//   const { default: provider } = await import(`../${PROVIDERS_FOLDER}/${file}`);
-//   providers.push(new provider(options));
-// }
-// esbuild, used for packaging, doesn't seem to support dynamic imports at this time so we'll manually import providers for now.
-import UP42 from "./providers/up42.mjs";
-providers.push(new UP42(options));
-
 if (options.help) process.exit(0);
 
 if (options.dryRun) fs.mkdirSync("send", { recursive: true });
@@ -56,16 +43,6 @@ if (!context.LUCIUS_API_URL || !context.LUCIUS_API_KEY) {
   throw new Error("Both LUCIUS_API_URL and LUCIUS_API_KEY need to be defined");
 }
 
-const main = async () => {
-  for (const provider of providers) {
-    try {
-      await provider.init();
-    } catch (e) {
-      console.error(`Error creating provider ${provider.constructor.name}: ${e}`);
-    }
-  }
-  context["db"] = createDirectus(context.LUCIUS_API_URL).with(staticToken(context.LUCIUS_API_KEY)).with(rest());
-  intervalFetch(context, providers);
-};
+export default main;
 
-main().catch((err) => console.error(err));
+main(context).catch((err) => console.error(err));

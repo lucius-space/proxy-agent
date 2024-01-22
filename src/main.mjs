@@ -1,8 +1,33 @@
 import fs from "fs";
+import { createDirectus, rest, staticToken } from "@directus/sdk";
 import { uploadXMLFile, uploadSupporting } from "./upload-file.mjs";
 import { toRFC3339, isDateInPast } from "./utils.mjs";
 
-export const intervalFetch = async (context, providers) => {
+// Import all provider modules
+const PROVIDERS_FOLDER = "./src/providers";
+let provider_files = fs.readdirSync(PROVIDERS_FOLDER);
+let providers = [];
+// for (const file of provider_files) {
+//   const { default: provider } = await import(`../${PROVIDERS_FOLDER}/${file}`);
+//   providers.push(new provider(options));
+// }
+// esbuild, used for packaging, doesn't seem to support dynamic imports at this time so we'll manually import providers for now.
+import UP42 from "./providers/up42.mjs";
+
+export const main = async (context) => {
+  providers.push(new UP42(context.options));
+  for (const provider of providers) {
+    try {
+      await provider.init();
+    } catch (e) {
+      console.error(`Error creating provider ${provider.constructor.name}: ${e}`);
+    }
+  }
+  context["db"] = createDirectus(context.LUCIUS_API_URL).with(staticToken(context.LUCIUS_API_KEY)).with(rest());
+  intervalFetch(context, providers);
+};
+
+const intervalFetch = async (context, providers) => {
   const interval = context.options.interval * 60 * 1000;
   let startDate = toRFC3339(context.options.startDate);
   let endDate = context.options.endDate ? toRFC3339(context.options.endDate) : null;
@@ -39,7 +64,7 @@ export const intervalFetch = async (context, providers) => {
     }
 
     if (endDate && isDateInPast(endDate)) {
-      console.log("${new Date().toISOString()} :: End date reached, exiting...");
+      console.log(`${new Date().toISOString()} :: End date ${endDate} reached, exiting...`);
       break;
     }
 
