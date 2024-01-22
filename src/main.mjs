@@ -4,8 +4,8 @@ import { uploadXMLFile, uploadSupporting } from "./upload-file.mjs";
 import { toRFC3339, isDateInPast } from "./utils.mjs";
 
 // Import all provider modules
-const PROVIDERS_FOLDER = "./src/providers";
-let provider_files = fs.readdirSync(PROVIDERS_FOLDER);
+// const PROVIDERS_FOLDER = "./src/providers";
+// let provider_files = fs.readdirSync(PROVIDERS_FOLDER);
 let providers = [];
 // for (const file of provider_files) {
 //   const { default: provider } = await import(`../${PROVIDERS_FOLDER}/${file}`);
