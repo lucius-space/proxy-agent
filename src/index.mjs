@@ -43,6 +43,4 @@ if (!context.LUCIUS_API_URL || !context.LUCIUS_API_KEY) {
   throw new Error("Both LUCIUS_API_URL and LUCIUS_API_KEY need to be defined");
 }
 
-export default main;
-
 main(context).catch((err) => console.error(err));

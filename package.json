@@ -4,6 +4,9 @@
   "description": "LUCIUS proxy agent for fetching metadata from providers",
   "type": "module",
   "main": "src/index.mjs",
+  "exports": {
+    "./main": "./src/main.mjs"
+  },
   "bin": {
     "lucius-proxy": "dist/index.js"
   },
