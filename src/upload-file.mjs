@@ -5,7 +5,7 @@ import { URL } from "url";
 import { uploadFiles, updateFile, readItem } from "@directus/sdk";
 
 export const uploadXMLFile = async (context, xml) => {
-  console.log(`${new Date().toISOString()} :: Uploading capture XML ${xml.filename}`);
+  context.options.debug && console.log(`${new Date().toISOString()} :: Uploading capture XML ${xml.filename}`);
   const formData = new FormDataOld();
   formData.append("file", Buffer.from(xml.fileData, "utf-8"), xml.filename);
 
@@ -67,7 +67,7 @@ export const uploadXMLFile = async (context, xml) => {
       console.error(`Error uploading XML file ${xml.filename} as supporting asset: ${e}`);
     }
   } else {
-    console.log(`${new Date().toISOString()} :: File already exists: ${xml.filename}`);
+    context.options.debug && console.log(`${new Date().toISOString()} :: File already exists: ${xml.filename}`);
   }
 
   return record_mapping;
@@ -76,7 +76,7 @@ export const uploadXMLFile = async (context, xml) => {
 export const uploadSupporting = async (context, supporting, record) => {
   try {
     if (!record.assets.includes(supporting.filename)) {
-      console.log(`${new Date().toISOString()} :: Uploading supporting file ${supporting.filename}`);
+      context.options.debug && console.log(`${new Date().toISOString()} :: Uploading supporting file ${supporting.filename}`);
       const file = new Blob([supporting.fileData], { type: supporting.type });
       const formData = new FormData();
       formData.append("file", file, supporting.filename);
@@ -107,7 +107,7 @@ export const uploadSupporting = async (context, supporting, record) => {
         console.error(`Error updating supporting file ${supporting.filename} relationship: ${e}`);
       }
     } else {
-      console.log(`${new Date().toISOString()} :: File already exists: ${supporting.filename}`);
+      context.options.debug && console.log(`${new Date().toISOString()} :: File already exists: ${supporting.filename}`);
     }
   } catch (e) {
     console.error(e);

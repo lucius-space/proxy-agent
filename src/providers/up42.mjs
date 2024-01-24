@@ -119,7 +119,7 @@ export default class UP42 {
           feature.assets[filename]["filename"] = filename;
           // The standard metadata files only have 2 roles attached to them
           if (asset.type === "application/xml" && asset.roles.length == 2 && !asset.roles.includes("bundle")) {
-            console.log(`${new Date().toISOString()} :: Pulling XML file: ${filename}`);
+            this.debug && console.log(`${new Date().toISOString()} :: Pulling XML file: ${filename}`);
             const response = await axios.get(asset.href, { responseType: "arraybuffer", headers: headers });
             let xmlMatch = filterXMLFiles(this.debug, filename, response.data, "METADATA_PROFILE", SATELLITES);
             if (xmlMatch) {
@@ -128,11 +128,11 @@ export default class UP42 {
               delete feature.assets[filename];
             }
           } else if (asset.type === "image/jpeg") {
-            console.log(`${new Date().toISOString()} :: Pulling preview jpeg: ${filename}`);
+            this.debug && console.log(`${new Date().toISOString()} :: Pulling preview jpeg: ${filename}`);
             const response = await axios.get(asset.href, { responseType: "arraybuffer", headers: headers });
             feature.assets[filename]["fileData"] = response.data;
           } else if (asset.type === "application/geo+json") {
-            console.log(`${new Date().toISOString()} :: Pulling geojson: ${filename}`);
+            this.debug && console.log(`${new Date().toISOString()} :: Pulling geojson: ${filename}`);
             const response = await axios.get(asset.href, { responseType: "arraybuffer", headers: headers });
             feature.assets[filename]["fileData"] = response.data;
           } else {
