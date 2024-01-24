@@ -3,7 +3,6 @@ import { filterByValue, filterXMLFiles } from "../utils.mjs";
 
 const API_URL = "https://api.up42.com";
 const SATELLITES = ["PHR", "PNEO"];
-const API_LIMIT = process.env.API_LIMIT || 10000;
 const API_FILTER = {
   op: "and",
   args: [
@@ -33,6 +32,7 @@ export default class UP42 {
 
     this.UP42_USERNAME = process.env.UP42_USERNAME;
     this.UP42_PASSWORD = process.env.UP42_PASSWORD;
+    this.API_LIMIT = process.env.API_LIMIT || 10000;
     this.ACCESS_TOKEN = null;
     this.REFRESH_TOKEN = null;
     this.debug = options.debug;
@@ -86,7 +86,7 @@ export default class UP42 {
     const requestParams = {
       method: "POST",
       headers: myHeaders,
-      body: JSON.stringify({ datetime: dateRange, limit: API_LIMIT, filter: API_FILTER }),
+      body: JSON.stringify({ datetime: dateRange, limit: this.API_LIMIT, filter: API_FILTER }),
       redirect: "follow",
     };
     try {
