@@ -15,7 +15,9 @@ let providers = [];
 import UP42 from "./providers/up42.mjs";
 
 export const main = async (context) => {
-  providers.push(new UP42(context.options));
+  if (!providers.filter((arr) => arr instanceof UP42).length) {
+    providers.push(new UP42(context.options));
+  }
   for (const provider of providers) {
     try {
       await provider.init();
