@@ -36,6 +36,9 @@ if (options.dryRun) fs.mkdirSync("send", { recursive: true });
 let context = {
   LUCIUS_API_URL: process.env.LUCIUS_API_URL || "https://app.lucius.space",
   LUCIUS_API_KEY: process.env.LUCIUS_API_KEY,
+  API_LIMIT: process.env.API_LIMIT,
+  UP42_USERNAME: process.env.UP42_USERNAME,
+  UP42_PASSWORD: process.env.UP42_PASSWORD,
   options: options,
 };
 

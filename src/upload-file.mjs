@@ -101,6 +101,7 @@ export const uploadSupporting = async (context, supporting, record) => {
               update: [],
               delete: [],
             },
+            tags: ["integration-capture-upload"],
           })
         );
       } catch (e) {

@@ -21,8 +21,8 @@ SATELLITES.forEach((s) => {
 });
 
 export default class UP42 {
-  constructor(options) {
-    if (options.help) {
+  constructor(context) {
+    if (context.options.help) {
       console.log(`\n======================= UP42 Usage =======================
     Environment Variables:
       UP42_USERNAME    : Optional. UP42 username for token authentication.
@@ -30,12 +30,12 @@ export default class UP42 {
       return null;
     }
 
-    this.UP42_USERNAME = process.env.UP42_USERNAME;
-    this.UP42_PASSWORD = process.env.UP42_PASSWORD;
-    this.API_LIMIT = process.env.API_LIMIT || 10000;
+    this.UP42_USERNAME = context.UP42_USERNAME;
+    this.UP42_PASSWORD = context.UP42_PASSWORD;
+    this.API_LIMIT = context.API_LIMIT || 10000;
     this.ACCESS_TOKEN = null;
     this.REFRESH_TOKEN = null;
-    this.debug = options.debug;
+    this.debug = context.options.debug;
   }
 
   async init() {

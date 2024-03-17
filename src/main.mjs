@@ -16,7 +16,7 @@ import UP42 from "./providers/up42.mjs";
 
 export const main = async (context) => {
   if (!providers.filter((arr) => arr instanceof UP42).length) {
-    providers.push(new UP42(context.options));
+    providers.push(new UP42(context));
   }
   for (const provider of providers) {
     try {
