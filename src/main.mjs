@@ -6,7 +6,7 @@ import { toRFC3339, isDateInPast } from "./utils.mjs";
 // Import all provider modules
 // const PROVIDERS_FOLDER = "./src/providers";
 // let provider_files = fs.readdirSync(PROVIDERS_FOLDER);
-let providers = [];
+// let providers = [];
 // for (const file of provider_files) {
 //   const { default: provider } = await import(`../${PROVIDERS_FOLDER}/${file}`);
 //   providers.push(new provider(options));
@@ -15,6 +15,7 @@ let providers = [];
 import UP42 from "./providers/up42.mjs";
 
 export const main = async (context) => {
+  let providers = [];
   if (!providers.filter((arr) => arr instanceof UP42).length) {
     providers.push(new UP42(context));
   }

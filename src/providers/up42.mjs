@@ -79,14 +79,37 @@ export default class UP42 {
   }
 
   async getCaptures(startDate, endDate) {
-    const dateRange = startDate + (endDate ? "/" + endDate : "/..");
+    let API_FILTER_WITH_DATES = API_FILTER;
+    if (endDate) {
+      API_FILTER_WITH_DATES.args.push({
+        op: "t_overlaps",
+        args: [
+          {
+            property: "created",
+          },
+          {
+            interval: [startDate, endDate],
+          },
+        ],
+      });
+    } else {
+      API_FILTER_WITH_DATES.args.push({
+        op: "t_after",
+        args: [
+          {
+            property: "created",
+          },
+          startDate,
+        ],
+      });
+    }
     let myHeaders = new Headers();
     myHeaders.append("Authorization", `Bearer ${this.ACCESS_TOKEN}`);
     myHeaders.append("Content-Type", "application/json");
     const requestParams = {
       method: "POST",
       headers: myHeaders,
-      body: JSON.stringify({ datetime: dateRange, limit: this.API_LIMIT, filter: API_FILTER }),
+      body: JSON.stringify({ limit: this.API_LIMIT, filter: API_FILTER_WITH_DATES }),
       redirect: "follow",
     };
     try {
