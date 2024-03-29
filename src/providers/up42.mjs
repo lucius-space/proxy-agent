@@ -79,7 +79,7 @@ export default class UP42 {
   }
 
   async getCaptures(startDate, endDate) {
-    let API_FILTER_WITH_DATES = API_FILTER;
+    let API_FILTER_WITH_DATES = structuredClone(API_FILTER);
     if (endDate) {
       API_FILTER_WITH_DATES.args.push({
         op: "t_overlaps",
@@ -113,7 +113,7 @@ export default class UP42 {
       redirect: "follow",
     };
     try {
-      console.log(`${new Date().toISOString()} :: Fetching UP42 captures`);
+      console.log(`${new Date().toISOString()} :: Fetching UP42 captures for ${startDate} to ${endDate}`);
       let response = await fetch(`${API_URL}/v2/assets/stac/search`, requestParams);
       if (response.status == 401) {
         const tokens = await this.fetchTokens();
