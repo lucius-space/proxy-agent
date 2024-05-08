@@ -131,19 +131,27 @@ export default class UP42 {
   }
 
   async processResponseData(data) {
-    const headers = {
-      Authorization: `Bearer ${this.ACCESS_TOKEN}`,
-    };
-
     for (let feature of data.features) {
       if (this.debug == 2) console.log(feature);
       for (const [filename, asset] of Object.entries(feature.assets)) {
         try {
+          let headers = {
+            Authorization: `Bearer ${this.ACCESS_TOKEN}`,
+          };
           feature.assets[filename]["filename"] = filename;
           // The standard metadata files only have 2 roles attached to them
           if (asset.type === "application/xml" && asset.roles.length == 2 && !asset.roles.includes("bundle")) {
             this.debug && console.log(`${new Date().toISOString()} :: Pulling XML file: ${filename}`);
-            const response = await axios.get(asset.href, { responseType: "arraybuffer", headers: headers });
+            let response = await axios.get(asset.href, { responseType: "arraybuffer", headers: headers });
+            if (response.status == 401) {
+              const tokens = await this.fetchTokens();
+              this.ACCESS_TOKEN = tokens[0];
+              this.REFRESH_TOKEN = tokens[1];
+              headers = {
+                Authorization: `Bearer ${this.ACCESS_TOKEN}`,
+              };
+              response = await axios.get(asset.href, { responseType: "arraybuffer", headers: headers });
+            }
             let xmlMatch = filterXMLFiles(this.debug, filename, response.data, "METADATA_PROFILE", SATELLITES);
             if (xmlMatch) {
               feature.assets[filename]["fileData"] = response.data;
