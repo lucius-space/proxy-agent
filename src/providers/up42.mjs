@@ -131,49 +131,54 @@ export default class UP42 {
   }
 
   async processResponseData(data) {
-    for (let feature of data.features) {
-      if (this.debug == 2) console.log(feature);
-      for (const [filename, asset] of Object.entries(feature.assets)) {
-        try {
-          let headers = {
-            Authorization: `Bearer ${this.ACCESS_TOKEN}`,
-          };
-          feature.assets[filename]["filename"] = filename;
-          // The standard metadata files only have 2 roles attached to them
-          if (asset.type === "application/xml" && asset.roles.length == 2 && !asset.roles.includes("bundle")) {
-            this.debug && console.log(`${new Date().toISOString()} :: Pulling XML file: ${filename}`);
-            let response = await axios.get(asset.href, { responseType: "arraybuffer", headers: headers });
-            if (response.status == 401) {
-              const tokens = await this.fetchTokens();
-              this.ACCESS_TOKEN = tokens[0];
-              this.REFRESH_TOKEN = tokens[1];
-              headers = {
+    console.log(`${new Date().toISOString()} :: ${data.features.length} features being processed.`);
+    await Promise.all(
+      data.features.map(async (feature) => {
+        if (this.debug == 2) console.log(feature);
+        for (const [filename, asset] of Object.entries(feature.assets)) {
+          let attempt = 1;
+          while (attempt <= 3) {
+            try {
+              let headers = {
                 Authorization: `Bearer ${this.ACCESS_TOKEN}`,
               };
-              response = await axios.get(asset.href, { responseType: "arraybuffer", headers: headers });
+              feature.assets[filename]["filename"] = filename;
+              // The standard metadata files only have 2 roles attached to them
+              if (asset.type === "application/xml" && asset.roles.length == 2 && !asset.roles.includes("bundle")) {
+                this.debug && console.log(`${new Date().toISOString()} :: Pulling XML file: ${filename}`);
+                const response = await axios.get(asset.href, { responseType: "arraybuffer", headers: headers });
+                let xmlMatch = filterXMLFiles(this.debug, filename, response.data, "METADATA_PROFILE", SATELLITES);
+                if (xmlMatch) {
+                  feature.assets[filename]["fileData"] = response.data;
+                } else {
+                  delete feature.assets[filename];
+                }
+              } else if (asset.type === "image/jpeg") {
+                this.debug && console.log(`${new Date().toISOString()} :: Pulling preview jpeg: ${filename}`);
+                const response = await axios.get(asset.href, { responseType: "arraybuffer", headers: headers });
+                feature.assets[filename]["fileData"] = response.data;
+              } else if (asset.type === "application/geo+json") {
+                this.debug && console.log(`${new Date().toISOString()} :: Pulling geojson: ${filename}`);
+                const response = await axios.get(asset.href, { responseType: "arraybuffer", headers: headers });
+                feature.assets[filename]["fileData"] = response.data;
+              } else {
+                delete feature.assets[filename];
+              }
+              break;
+            } catch (error) {
+              console.error(`${new Date().toISOString()} :: Error pulling file ${filename} on attempt #${attempt}: `, error.message);
+              if (error?.response?.status == 401) {
+                console.log(`${new Date().toISOString()} :: Pulling new access token`);
+                const tokens = await this.fetchTokens();
+                this.ACCESS_TOKEN = tokens[0];
+                this.REFRESH_TOKEN = tokens[1];
+              }
+              attempt++;
             }
-            let xmlMatch = filterXMLFiles(this.debug, filename, response.data, "METADATA_PROFILE", SATELLITES);
-            if (xmlMatch) {
-              feature.assets[filename]["fileData"] = response.data;
-            } else {
-              delete feature.assets[filename];
-            }
-          } else if (asset.type === "image/jpeg") {
-            this.debug && console.log(`${new Date().toISOString()} :: Pulling preview jpeg: ${filename}`);
-            const response = await axios.get(asset.href, { responseType: "arraybuffer", headers: headers });
-            feature.assets[filename]["fileData"] = response.data;
-          } else if (asset.type === "application/geo+json") {
-            this.debug && console.log(`${new Date().toISOString()} :: Pulling geojson: ${filename}`);
-            const response = await axios.get(asset.href, { responseType: "arraybuffer", headers: headers });
-            feature.assets[filename]["fileData"] = response.data;
-          } else {
-            delete feature.assets[filename];
           }
-        } catch (error) {
-          console.error(`${new Date().toISOString()} :: Error pulling file ${filename}: `, error.message);
         }
-      }
-    }
+      })
+    );
 
     let captures = [];
 

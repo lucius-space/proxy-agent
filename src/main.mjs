@@ -54,14 +54,16 @@ const intervalFetch = async (context, providers) => {
           }
         }
         if (capture?.supporting) {
-          for (const supporting of capture.supporting) {
-            if (context.options.dryRun) {
-              console.log(`${new Date().toISOString()} :: Dry run saving capture supporting ${supporting.filename}`);
-              fs.writeFileSync(`./send/${supporting.filename}`, supporting.fileData);
-            } else if (record) {
-              await uploadSupporting(context, supporting, record);
-            }
-          }
+          await Promise.all(
+            capture.supporting.map(async (supporting) => {
+              if (context.options.dryRun) {
+                console.log(`${new Date().toISOString()} :: Dry run saving capture supporting ${supporting.filename}`);
+                fs.writeFileSync(`./send/${supporting.filename}`, supporting.fileData);
+              } else if (record) {
+                await uploadSupporting(context, supporting, record);
+              }
+            })
+          );
         }
       }
     }
