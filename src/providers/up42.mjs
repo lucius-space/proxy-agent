@@ -135,6 +135,7 @@ export default class UP42 {
     const chunkSize = 250;
     for (let i = 0; i < data.features.length; i += chunkSize) {
       let chunk = data.features.slice(i, i + chunkSize);
+      console.log(`${new Date().toISOString()} :: Current batch processing: ${i} to ${i + chunkSize} `);
       await Promise.all(
         chunk.map(async (feature) => {
           if (this.debug == 2) console.log(feature);

@@ -14,6 +14,8 @@ import { toRFC3339, isDateInPast } from "./utils.mjs";
 // esbuild, used for packaging, doesn't seem to support dynamic imports at this time so we'll manually import providers for now.
 import UP42 from "./providers/up42.mjs";
 
+const millisecondsInADay = 24 * 60 * 60 * 1000;
+
 export const main = async (context) => {
   let providers = [];
   if (!providers.filter((arr) => arr instanceof UP42).length) {
@@ -37,34 +39,41 @@ const intervalFetch = async (context, providers) => {
 
   do {
     for (const p of providers) {
-      const data = await p.getCaptures(startDate, endDate);
-      const captures = await p.processResponseData(data);
+      let loopStartDate = new Date(startDate);
+      let loopEndDate = endDate ? new Date(endDate) : new Date();
+      while (loopStartDate <= loopEndDate) {
+        let currentEndDate = new Date(loopStartDate.getTime() + millisecondsInADay);
+        currentEndDate = loopEndDate < currentEndDate ? loopEndDate : currentEndDate;
+        const data = await p.getCaptures(toRFC3339(loopStartDate), toRFC3339(currentEndDate));
+        const captures = await p.processResponseData(data);
 
-      for (const capture of captures) {
-        let record = null;
-        if (capture?.xmls) {
-          for (const xml of capture.xmls) {
-            if (context.options.dryRun) {
-              console.log(`${new Date().toISOString()} :: Dry run saving capture XML ${xml.filename}`);
-              fs.writeFileSync(`./send/${xml.filename}`, xml.fileData);
-            } else {
-              let record_mapping = await uploadXMLFile(context, xml);
-              record = record_mapping[0];
+        for (const capture of captures) {
+          let record = null;
+          if (capture?.xmls) {
+            for (const xml of capture.xmls) {
+              if (context.options.dryRun) {
+                console.log(`${new Date().toISOString()} :: Dry run saving capture XML ${xml.filename}`);
+                fs.writeFileSync(`./send/${xml.filename}`, xml.fileData);
+              } else {
+                let record_mapping = await uploadXMLFile(context, xml);
+                record = record_mapping[0];
+              }
             }
           }
+          if (capture?.supporting) {
+            await Promise.all(
+              capture.supporting.map(async (supporting) => {
+                if (context.options.dryRun) {
+                  console.log(`${new Date().toISOString()} :: Dry run saving capture supporting ${supporting.filename}`);
+                  fs.writeFileSync(`./send/${supporting.filename}`, supporting.fileData);
+                } else if (record) {
+                  await uploadSupporting(context, supporting, record);
+                }
+              })
+            );
+          }
         }
-        if (capture?.supporting) {
-          await Promise.all(
-            capture.supporting.map(async (supporting) => {
-              if (context.options.dryRun) {
-                console.log(`${new Date().toISOString()} :: Dry run saving capture supporting ${supporting.filename}`);
-                fs.writeFileSync(`./send/${supporting.filename}`, supporting.fileData);
-              } else if (record) {
-                await uploadSupporting(context, supporting, record);
-              }
-            })
-          );
-        }
+        loopStartDate.setDate(loopStartDate.getDate() + 1);
       }
     }
 
