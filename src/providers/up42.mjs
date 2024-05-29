@@ -132,7 +132,7 @@ export default class UP42 {
 
   async processResponseData(data) {
     console.log(`${new Date().toISOString()} :: ${data.features.length} features being processed.`);
-    const chunkSize = 250;
+    const chunkSize = 50;
     for (let i = 0; i < data.features.length; i += chunkSize) {
       let chunk = data.features.slice(i, i + chunkSize);
       console.log(`${new Date().toISOString()} :: Current batch processing: ${i} to ${i + chunkSize} `);

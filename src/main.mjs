@@ -42,7 +42,7 @@ const intervalFetch = async (context, providers) => {
       let loopStartDate = new Date(startDate);
       let loopEndDate = endDate ? new Date(endDate) : new Date();
       while (loopStartDate <= loopEndDate) {
-        let currentEndDate = new Date(loopStartDate.getTime() + millisecondsInADay);
+        let currentEndDate = new Date(loopStartDate.getTime() + millisecondsInADay / 2);
         currentEndDate = loopEndDate < currentEndDate ? loopEndDate : currentEndDate;
         const data = await p.getCaptures(toRFC3339(loopStartDate), toRFC3339(currentEndDate));
         const captures = await p.processResponseData(data);
@@ -73,7 +73,7 @@ const intervalFetch = async (context, providers) => {
             );
           }
         }
-        loopStartDate.setDate(loopStartDate.getDate() + 1);
+        loopStartDate = currentEndDate;
       }
     }
 
