@@ -73,6 +73,7 @@ const intervalFetch = async (context, providers) => {
             );
           }
         }
+        if (currentEndDate == loopEndDate) break;
         loopStartDate = currentEndDate;
       }
     }
